@@ -7,7 +7,7 @@
  
 int main(int argc, char** argv){
   if (argc != 5) {  
-        printf("Error: The correct use is -> %s <num1> <num2>\n", argv[0]);
+        printf("Error: The correct use is -> %s <n> <m> <iter_max> <tolerance>\n", argv[0]);
         return 1;
     }
 
@@ -54,15 +54,18 @@ int main(int argc, char** argv){
         error = fmaxf(error, fabsf(Anew[i*m + j]-A[i*m + j]));
       }
     }
+
     temp = A;
     A = Anew;
     Anew = temp;
-    //error = sqrtf(error); 
+
     iter++;
+
     if (iter % 10 == 0){
       printf("Iteration %d, error = %f\n", iter, error);
     }
   }
+
   printf("Number of iterations: %d\n", iter);
   printf("Final error: %f\n", error);
 

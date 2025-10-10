@@ -1,0 +1,9 @@
+In Test 2 we have a grid of (8000, 12000), 3 Teams and 20 Focal Points
+-	El que tarda mes es la Laplace (for loop 2)
+In Test 3 we have a grid of (512, 512), 512 Teams and 256 Focal Points
+-	El que tarda mes es la Laplace (97%) i tenim un (3% del calcul del cercle per cada bomber (for loop 4)
+In Test 4 we have a grid of (500, 500), 4000 Teams, 1000 Focal Points:
+-	Tarda mes Laplace (80%) pero ara el calcul del cercle de bombers es un 20%.
+
+Conclusió:
+-	El que mes influeix és el tamany del grid, i en segona opció, el nombre de bombers.

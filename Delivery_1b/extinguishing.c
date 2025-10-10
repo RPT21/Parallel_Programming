@@ -18,7 +18,7 @@
 #include <sys/time.h>
 #endif
 
-#define DEBUG
+// #define DEBUG
 
 /* Function to get wall time */
 double cp_Wtime(){
@@ -476,11 +476,11 @@ int main(int argc, char *argv[]) {
 		p3 = t3*100.0 / t_total;
 		p4 = t4*100.0 / t_total;
 		printf("Iteration %d:\n", iter);
-    	printf("  Total: %.10f s\n", t_total);
-		printf("  For loop 1: %.10f s (%.2f%%)\n", t1, p1);
-    	printf("  For loop 2: %.10f s (%.2f%%)\n", t2, p2);
-    	printf("  For loop 3: %.10f s (%.2f%%)\n", t3, p3);
-    	printf("  For loop 4: %.10f s (%.2f%%)\n", t4, p4);
+    	printf("  Total iter time: %.10f s\n", t_total);
+		printf("  For loop 1: %.10f s (%.2f%%)  (Activate focal points while iter increases)\n", t1, p1);
+    	printf("  For loop 2: %.10f s (%.2f%%)  (Keep active points at his temp and do 10 iterations of laplace to propagate heat)\n", t2, p2);
+    	printf("  For loop 3: %.10f s (%.2f%%)  (Move the teams at each iteration)\n", t3, p3);
+    	printf("  For loop 4: %.10f s (%.2f%%)  (Reduce the temperature in a circle centered to each team and desactivate focal points)\n", t4, p4);
 		printf("\n");
 		
 

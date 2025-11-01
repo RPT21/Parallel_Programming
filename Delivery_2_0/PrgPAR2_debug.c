@@ -1,46 +1,35 @@
 #include <math.h>
-#include <omp.h>
 #include <stdio.h>
 #include <stdlib.h>
 
-void VectF1(double* IN, double* OUT, int n) {
-    printf("Thread %d starts executing F1\n", omp_get_thread_num());
+void VectF1(double* IN, double* OUT, int n){
     for (int i = 0; i < n; i++) {
         long int T = IN[i];
         OUT[i] = (double)(T % 4) + 0.5 + (IN[i] - trunc(IN[i]));
     }
-    printf("Thread %d ends executing F1\n", omp_get_thread_num());
 }
 
 void VectF2(double* IN, double* OUT, double v, int n) {
-    printf("Thread %d starts executing F2\n", omp_get_thread_num());
     for (int i = 0; i < n; i++) OUT[i] = v / (1.0 + fabs(IN[i]));
-    printf("Thread %d ends executing F2\n", omp_get_thread_num());
 }
 
-void VectScan(double* IN, double* OUT, int n) {
+void VectScan(double* IN, double* OUT, int n){
     double sum = 0.0;
-    printf("Thread %d starts executing Scan\n", omp_get_thread_num());
-    for (int i = 0; i < n; i++) {
+    for (int i = 0; i < n; i++){
         sum += IN[i];
         OUT[i] = sum;  // Inclusive: include current element
     }
-    printf("Thread %d ends executing Scan\n", omp_get_thread_num());
 }
 
 void VectAverage(double* IN, double* OUT, int n) {
-    printf("Thread %d starts executing Average\n", omp_get_thread_num());
     for (int i = 1; i < n - 1; i++) {
         OUT[i] = (2.0 * IN[i] + IN[i - 1] + IN[i + 1]) / 4.0;
     }
-    printf("Thread %d ends executing Average\n", omp_get_thread_num());
 }
 
 double VectSum(double* V, int n) {
     double sum = 0;
-    printf("Thread %d starts executing Sum\n", omp_get_thread_num());
     for (int i = 0; i < n; i++) sum = sum + V[i];
-    printf("Thread %d ends executing Sum\n", omp_get_thread_num());
     return sum;
 }
 
@@ -71,19 +60,38 @@ int main(int argc, char** argv) {
     for (i = 0; i < REP; i++) {
 #pragma omp parallel shared(A, B, C, D, v)
         {
-#pragma omp single
-            VectF1(A, B, N);
-
 #pragma omp sections
             {
 #pragma omp section
-                VectF2(B, C, v, N);
+                VectF1(A, B, N / 2);
 #pragma omp section
-                VectScan(C, A, N);
+                VectF1(A + N / 2, B + N / 2, N / 2);
             }
-            VectAverage(B, D, N);
-#pragma omp barrier
-            v = VectSum(D, N);
+#pragma omp sections
+            {
+#pragma omp section
+                VectF2(B, C, v, N / 2);
+#pragma omp section
+                VectF2(B + N / 2, C + N / 2, v, N / 2);
+            }
+#pragma omp sections
+            {
+#pragma omp section
+                VectAverage(B, D, N / 2 + 1);
+#pragma omp section
+                VectAverage(B + (N / 2) - 1, D + (N / 2) - 1, N / 2 + 1);
+            }
+#pragma omp sections
+            {
+#pragma omp section
+                {
+                    VectScan(C, A, N);
+                }
+#pragma omp section
+                {
+                    v = VectSum(D, N);
+                }
+            }
         }
     }
 

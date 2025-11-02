@@ -53,7 +53,7 @@ int main(int argc, char** argv) {
   // some tolerance, the outer loop will exit
   const float tol = 1.0e-3f;  // Example tolerance (0.1%)
   float error = 1.0f;
-  int iter_max = 100000;  // Example
+  int iter_max = 100;  // Example
   // Main loop: iterate until error <= tol a maximum of iter_max iterations
   while (error > tol && iter < iter_max) {
     // Calculate the new value for each element based on the current

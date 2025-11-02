@@ -16,7 +16,7 @@ void VectF2(double* IN, double* OUT, double v, int n) {
     for (int i = 0; i < n; i++) OUT[i] = v / (1.0 + fabs(IN[i]));
 }
 
-
+/*
 void VectScan(double* IN, double* OUT, int n) {
     double sum = 0.0;
     for (int i = 0; i < n; i++) {
@@ -24,6 +24,7 @@ void VectScan(double* IN, double* OUT, int n) {
         OUT[i] = sum;  // Inclusive: include current element
     }
 }
+*/
 
 /*
 void VectScan(double* IN, double* OUT, int n) {
@@ -33,6 +34,39 @@ void VectScan(double* IN, double* OUT, int n) {
     }
 }
 */
+
+
+void VectScan(double* IN, double* OUT, int n, int num_threads, double* partial_sums) {
+    #pragma omp parallel shared(IN, OUT, n, partial_sums, num_threads)
+    {
+        int tid = omp_get_thread_num();
+        int chunk = (n + num_threads - 1) / num_threads; // ceil(n/num_threads)
+        int start = tid * chunk;
+        int end = (start + chunk > n) ? n : (start + chunk);
+
+
+        double local_sum = 0.0;
+
+        if (end != n) {
+            for (int i = start; i < end; i++)
+                local_sum += IN[i];
+            // printf("Thread %d partial sum = %f\n", tid, local_sum);  // Debug, but we have repetitions REP too high
+            partial_sums[tid] = local_sum;
+        }
+
+        #pragma omp barrier
+
+        local_sum = 0;
+        for (int i = 0; i < tid; i++)
+            local_sum += partial_sums[i];
+
+        for (int i = start; i < end; i++) {
+            local_sum += IN[i];
+            OUT[i] = local_sum;  // Inclusive: include current element
+        }
+    }
+}
+
 
 void VectAverage(double* IN, double* OUT, int n) {
     #pragma omp parallel for
@@ -139,7 +173,7 @@ int main(int argc, char** argv) {
     for (i = 0; i < REP; i++) {
         VectF1(A, B, N);
         VectF2(B, C, v, N);
-        VectScan(C, A, N);
+        VectScan(C, A, N, num_threads, partial_sums);
         VectAverage(B, D, N);
         v = VectSum(D, N, num_threads, partial_sums);
     }

@@ -71,18 +71,10 @@ double VectSum(double* V, int n) {
 }
 */
 
-double VectSum(double* V, int n) {
-    int num_threads;
-    double* partial_sums;
+double VectSum(double* V, int n, int num_threads, double* partial_sums) {
 
-    #pragma omp parallel shared(V, n, partial_sums)
+    #pragma omp parallel shared(V, n, partial_sums, num_threads)
     {
-        #pragma omp single
-        num_threads = omp_get_num_threads();
-
-        #pragma omp single
-        partial_sums = (double*) malloc(num_threads * sizeof(double));
-
         int tid = omp_get_thread_num();
         int chunk = (n + num_threads - 1) / num_threads; // ceil(n/num_threads)
         int start = tid * chunk;
@@ -102,7 +94,6 @@ double VectSum(double* V, int n) {
     for (int i = 0; i < num_threads; i++)
         total += partial_sums[i];
 
-    free(partial_sums);
     return total;
 }
 
@@ -135,6 +126,9 @@ int main(int argc, char** argv) {
     double* C = malloc(N * sizeof(double));
     double* D = malloc(N * sizeof(double));
 
+    int num_threads = omp_get_num_threads();
+    double *partial_sums = (double*) malloc(num_threads * sizeof(double));
+
     //  set initial values
     srand48(0);
     for (i = 0; i < N; i++) A[i] = drand48() - 0.5f;  // values between -0.5 and 0.5
@@ -147,7 +141,7 @@ int main(int argc, char** argv) {
         VectF2(B, C, v, N);
         VectScan(C, A, N);
         VectAverage(B, D, N);
-        v = VectSum(D, N);
+        v = VectSum(D, N, num_threads, partial_sums);
     }
 
     printf("Outputs: v= %0.12e, A[%d]= %0.12e\n", v, N - 1, A[N - 1]);
@@ -157,4 +151,5 @@ int main(int argc, char** argv) {
     free(B);
     free(C);
     free(D);
+    free(partial_sums);
 }

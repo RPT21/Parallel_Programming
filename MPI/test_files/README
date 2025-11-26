@@ -1,0 +1,19 @@
+Test files description
+-----------------------
+
+test1
+	Basic general debugging test, with a small 30x30 surface
+
+test2
+	Example with a 12000x8000 surface, 3 teams and 20 focal points.
+	The heat difussion part has the main load.
+	Maximum 30 iterations.
+
+test3
+	Example in a 512x512 surface, with 512 teams and 256 focal points
+	slowly starting along a longer period. Maximum 5000 iterations.
+
+test4
+	Example in a 510x510 surface, 4000 teams, and 1000 focal points.
+	The load in the teams is higher and they are ordered by class.
+

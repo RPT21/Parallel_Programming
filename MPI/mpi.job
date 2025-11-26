@@ -1,0 +1,12 @@
+#!/bin/bash
+#SBATCH --job-name=mpi_lap
+#SBATCH -N 2 #Number of nodes
+#SBATCH -n 24 #Number of tasks
+#SBATCH --partition=nodo.q
+
+module load gcc
+module load openmpi/4.1.1
+
+mpicc -O2 laplace_MPI_2.c -o lap_mpi2 -lmpi -lm
+
+mpirun -np $1 ./lap_mpi2 $2 $3 #It can be done all at once

@@ -397,7 +397,7 @@ MPI_Comm_size(MPI_COMM_WORLD, &nproc);
 				MPI_Sendrecv(surfaceCopy + (last_row) * columns, columns, MPI_FLOAT, me+1, 67,
 							surfaceCopy + (last_row + 1) * columns, columns, MPI_FLOAT, me+1, 66,
 							MPI_COMM_WORLD, &s);
-    }
+    		}
 
 			/* 4.2.3. Update surface values (skip borders) */
 			for(i = first_row; i <= last_row; i++)
@@ -484,9 +484,13 @@ MPI_Comm_size(MPI_COMM_WORLD, &nproc);
 			// Influence area of fixed radius depending on type
 			if ( teams[t].type == 1 ) radius = RADIUS_TYPE_1;
 			else radius = RADIUS_TYPE_2_3;
+
+			// Skip teams that do not affect this process rows
+			if ((teams[t].x-radius < first_row) && (teams[t].x+radius > last_row)) continue;
+
 			for( i=teams[t].x-radius; i<=teams[t].x+radius; i++ ) {
 				for( j=teams[t].y-radius; j<=teams[t].y+radius; j++ ) {
-					if ( i<1 || i>=rows-1 || j<1 || j>=columns-1 ) continue; // Out of the heated surface
+					if ( i < first_row || i > last_row || j < 1 || j >= columns - 1 ) continue; // Out of the heated surface (skip borders)
 					float dx = teams[t].x - i;
 					float dy = teams[t].y - j;
 					float distance = sqrtf( dx*dx + dy*dy );

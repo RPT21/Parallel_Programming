@@ -555,5 +555,6 @@ MPI_Comm_size(MPI_COMM_WORLD, &nproc);
 	free( surfaceCopy );
 
 	/* 8. End */
+	MPI_Finalize();
 	return 0;
 }

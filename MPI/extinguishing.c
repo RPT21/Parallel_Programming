@@ -131,12 +131,6 @@ void print_status( int iteration, int rows, int columns, float *surface, int num
 int main(int argc, char *argv[]) {
 	int i,j,t;
 
-	/* Init. MPI */
-MPI_Status s;
-MPI_Init(&argc, &argv);
-MPI_Comm_rank(MPI_COMM_WORLD, &me);
-MPI_Comm_size(MPI_COMM_WORLD, &nproc);
-
 	// Simulation data
 	int rows, columns, max_iter;
 	float *surface, *surfaceCopy;
@@ -310,16 +304,31 @@ MPI_Comm_size(MPI_COMM_WORLD, &nproc);
  */
 
 	/* Init. MPI */
+	int me, nproc;
 	MPI_Status s;
 	MPI_Init(&argc, &argv);
 	MPI_Comm_rank(MPI_COMM_WORLD, &me);
 	MPI_Comm_size(MPI_COMM_WORLD, &nproc);
 
 	/* Setting each first and last row per process */
-	int chunk = (n - 2 + nproc - 1) / nproc;
+	int chunk = (rows - 2 + nproc - 1) / nproc;
 	int first_row = 1 + me * chunk;
 	int last_row  = first_row + chunk - 1;
-	if(last_row > n - 2) last_row = n - 2;
+	if(last_row > rows - 2) last_row = rows - 2;
+	int nrows = last_row - first_row + 1 + 2; // Including halo rows
+	int reference_row = first_row - 1;
+
+	// Translate teams and focal points coordinates to local process coordinates
+	for( int t=0; t<num_teams; t++ ) {
+		teams[t].x = teams[t].x - reference_row;
+	}
+	for( int i=0; i<num_focal; i++ ) {
+		focal[i].x = focal[i].x - reference_row;
+	}
+
+	// Change coordinates of surface to local process coordinates
+	first_row = 1;
+	last_row = nrows - 2;
 
 	/* Create loop timers*/
 	double t_iter_start, t_iter_end;
@@ -332,13 +341,13 @@ MPI_Comm_size(MPI_COMM_WORLD, &nproc);
 	double p1, p2, p3, p4;
 
 	/* 3. Initialize surfaces */
-	surface = (float *)malloc( sizeof(float) * (size_t)rows * (size_t)columns );
-	surfaceCopy = (float *)malloc( sizeof(float) * (size_t)rows * (size_t)columns );
+	surface = (float *)malloc( sizeof(float) * (size_t)nrows * (size_t)columns );
+	surfaceCopy = (float *)malloc( sizeof(float) * (size_t)nrows * (size_t)columns );
 	if ( surface == NULL || surfaceCopy == NULL ) {
 		fprintf(stderr,"-- Error allocating: surface structures\n");
 		exit( EXIT_FAILURE );
 	}
-	for( i=0; i<rows; i++ )
+	for( i=0; i<nrows; i++ )
 		for( j=0; j<columns; j++ ) {
 			accessMat( surface, i, j ) = 0.0;
 			accessMat( surfaceCopy, i, j ) = 0.0;
@@ -378,7 +387,7 @@ MPI_Comm_size(MPI_COMM_WORLD, &nproc);
 				if ( focal[i].active != 1 ) continue;
 				int x = focal[i].x;
 				int y = focal[i].y;
-				if ( x < 0 || x > rows-1 || y < 0 || y > columns-1 ) continue;
+				if ( x < 0 || x > nrows-1 || y < 0 || y > columns-1 ) continue;
 				accessMat( surface, x, y ) = focal[i].heat;
 			}
 
@@ -525,7 +534,7 @@ MPI_Comm_size(MPI_COMM_WORLD, &nproc);
 
 #ifdef DEBUG
 		/* 4.5. DEBUG: Print the current state of the simulation at the end of each iteration */
-		print_status( iter, rows, columns, surface, num_teams, teams, num_focal, focal, global_residual );
+		print_status( iter, nrows, columns, surface, num_teams, teams, num_focal, focal, global_residual );
 #endif // DEBUG
 	}
 	
@@ -547,7 +556,7 @@ MPI_Comm_size(MPI_COMM_WORLD, &nproc);
 	for (i=0; i<num_focal; i++) {
 		int x = focal[i].x;
 		int y = focal[i].y;
-		if ( x < 0 || x > rows-1 || y < 0 || y > columns-1 ) continue;
+		if ( x < 0 || x > nrows-1 || y < 0 || y > columns-1 ) continue;
 		printf(" %.6f", accessMat( surface, x, y ) );
 	}
 	printf("\n");

@@ -19,7 +19,7 @@
 #include <sys/time.h>
 #endif
 
-// #define DEBUG
+#define DEBUG
 
 /* Function to get wall time */
 double cp_Wtime(){
@@ -540,6 +540,7 @@ int main(int argc, char *argv[]) {
 		p2 = t2*100.0 / t_total;
 		p3 = t3*100.0 / t_total;
 		p4 = t4*100.0 / t_total;
+		/*
 		printf("Iteration %d:\n", iter);
     	printf("  Total iter time: %.10f s\n", t_total);
 		printf("  For loop 1: %.10f s (%.2f%%)  (Activate focal points while iter increases)\n", t1, p1);
@@ -547,12 +548,43 @@ int main(int argc, char *argv[]) {
     	printf("  For loop 3: %.10f s (%.2f%%)  (Move the teams at each iteration)\n", t3, p3);
     	printf("  For loop 4: %.10f s (%.2f%%)  (Reduce the temperature in a circle centered to each team and desactivate focal points)\n", t4, p4);
 		printf("\n");
+		*/
 		
 
 
 #ifdef DEBUG
 		/* 4.5. DEBUG: Print the current state of the simulation at the end of each iteration */
-		print_status( iter, nrows, columns, surface, num_teams, teams, num_focal, focal, global_residual );
+
+		// This version doesn't garuantee the order of prints because stdotut is buffered independently in each process and may arrive to the terminal in different order
+		/*
+		for (int i = 0; i < nproc; i++) {
+			MPI_Barrier(MPI_COMM_WORLD);   // All processes sync here
+			if (me == i) {
+				printf("Hi, I'm the process %d of %d\n", me, nproc);
+				// print_status( iter, nrows, columns, surface, num_teams, teams, num_focal, focal, global_residual);
+				fflush(stdout);
+			}
+    	}
+		MPI_Barrier( MPI_COMM_WORLD );
+		*/
+
+		// This version garuantees the order of prints, but is less efficient
+		int token = 0;
+
+		if (me != 0) {
+			MPI_Recv(&token, 1, MPI_INT, me - 1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+		}
+
+		// Now is my turn:
+		// printf("Hi, I'm the process %d of %d\n", me, nproc);
+		print_status( iter, nrows, columns, surface, num_teams, teams, num_focal, focal, global_residual);
+		fflush(stdout);
+
+		if (me != nproc - 1) {
+			MPI_Send(&token, 1, MPI_INT, me + 1, 0, MPI_COMM_WORLD);
+		}
+
+		MPI_Barrier(MPI_COMM_WORLD); // To sync all processes before next iteration
 #endif // DEBUG
 	}
 	

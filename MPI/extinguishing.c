@@ -577,7 +577,7 @@ int main(int argc, char *argv[]) {
 
 		// Now is my turn:
 		// printf("Hi, I'm the process %d of %d\n", me, nproc);
-		print_status( iter, nrows, columns, surface, num_teams, teams, num_focal, focal, global_residual);
+		print_status( iter, nrows - 2, columns, surface + columns, num_teams, teams, num_focal, focal, global_residual);
 		fflush(stdout);
 
 		if (me != nproc - 1) {

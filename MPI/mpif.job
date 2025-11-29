@@ -1,0 +1,15 @@
+#!/bin/bash
+#SBATCH --job-name=mpi_fire
+#SBATCH -N 8 #Number of nodes
+#SBATCH -n 96 #Number of tasks
+#SBATCH --partition=nodo.q
+#SBATCH --output=output.txt
+#SBATCH --error=error.txt
+
+
+module load gcc
+module load openmpi/4.1.1
+
+mpicc -O2 extinguishing.c -o ext -lmpi -lm
+
+mpirun -np $1 ./ext -f $2

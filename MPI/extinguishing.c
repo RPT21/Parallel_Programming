@@ -513,7 +513,7 @@ int main(int argc, char *argv[]) {
 			else radius = RADIUS_TYPE_2_3;
 
 			// Skip teams that do not affect this process rows
-			if ((teams[t].x-radius < first_row) && (teams[t].x+radius > last_row)) continue;
+			if ((teams[t].x+radius < first_row) || (teams[t].x-radius > last_row)) continue;
 
 			for( i=teams[t].x-radius; i<=teams[t].x+radius; i++ ) {
 				for( j=teams[t].y-radius; j<=teams[t].y+radius; j++ ) {

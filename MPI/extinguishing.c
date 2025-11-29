@@ -315,7 +315,7 @@ int main(int argc, char *argv[]) {
 	int first_row = 1 + me * chunk;
 	int last_row  = first_row + chunk - 1;
 	if(last_row > rows - 2) last_row = rows - 2;
-	int nrows = last_row - first_row + 1 + 2; // Including halo rows
+	int nrows = last_row - first_row + 1 + 2; // Including external rows
 	int reference_row = first_row - 1;
 
 	// Translate teams and focal points coordinates to local process coordinates
@@ -329,6 +329,24 @@ int main(int argc, char *argv[]) {
 	// Change coordinates of surface to local process coordinates
 	first_row = 1;
 	last_row = nrows - 2;
+
+	/*
+	Example with chunk = 3 and 0 to 9 rows:
+
+	    (0 |1 2 3| 4) 5 6 7 8 9
+		 ^
+		0 1 2 (3 |4 5 6| 7) 8 9
+		       ^
+		0 1 2 3 4 5 (6 |7 8| 9)
+					 ^
+	
+	first_row and last_row in local coordinates:
+		first_row = 1
+		last_row = nrows - 2
+	Where nrows = chunk + 2 (including external rows), and chunk may be smaller in the last process
+	The ^ indicates the zero position of local coordinates for each process
+	The | indicates the first_row and last_row positions
+	*/
 
 	/* Create loop timers*/
 	double t_iter_start, t_iter_end;

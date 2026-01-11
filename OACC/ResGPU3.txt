@@ -1,0 +1,36 @@
+Run on computer:
+aolin-gpu-3.uab.cat
+
+Jacobi relaxation Calculation: 4096 x 4096 mesh, maximum of 10000 iterations
+ 1000, 0.000622
+ 2000, 0.000259
+ 3000, 0.000141
+ 4000, 0.000089
+ 5000, 0.000061
+ 6000, 0.000044
+ 7000, 0.000035
+ 8000, 0.000030
+ 9000, 0.000027
+10000, 0.000024
+Total Iterations:     0, ERROR: 0.004919, A[32][32]= 0.015978
+
+ Performance counter stats for 'LGPU':
+
+          3.577,83 msec task-clock:u              #    0,993 CPUs utilized          
+                 0      context-switches:u        #    0,000 /sec                   
+                 0      cpu-migrations:u          #    0,000 /sec                   
+             3.382      page-faults:u             #  945,266 /sec                   
+    10.125.607.977      cycles:u                  #    2,830 GHz                      (83,33%)
+     5.350.818.974      stalled-cycles-frontend:u #   52,84% frontend cycles idle     (83,37%)
+     3.011.728.901      stalled-cycles-backend:u  #   29,74% backend cycles idle      (66,66%)
+    17.044.915.514      instructions:u            #    1,68  insn per cycle         
+                                                  #    0,31  stalled cycles per insn  (83,34%)
+     3.375.220.578      branches:u                #  943,371 M/sec                    (83,36%)
+        14.958.578      branch-misses:u           #    0,44% of all branches          (83,29%)
+
+       3,601927771 seconds time elapsed
+
+       3,168079000 seconds user
+       0,365738000 seconds sys
+
+

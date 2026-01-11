@@ -24,23 +24,27 @@ __global__ void dev_laplace_error(float* A, float* Anew, float* error, int n, in
   int i = blockIdx.x * blockDim.x + threadIdx.x + 1;
   int j = blockIdx.y * blockDim.y + threadIdx.y + 1;
 
-  // TODO: Remove DEBUG print before delivering the code
-  /*if (i == 1 && j == 1)
-    printf("DEBUG: Hello from GPU!\n");*/
+  __shared__ float shared_error;
+  if (threadIdx.x == 0 && threadIdx.y == 0) {
+      shared_error = 0.0f;
+  }
+  __syncthreads();
 
   if (i >= n - 1 || j >= m - 1) {
     return;
   }
-  int idx = i*m + j;
 
-  // TODO: Calculate the new value for each element based on the current
-  // values of its neighbors.
+  int idx = i*m + j;
   Anew[idx] = 0.25f*(A[idx-m]+A[idx+m]+A[idx-1]+A[idx+1]);
 
   // TODO: Compute error = maximum of the square root of the absolute
   // differences between the new value (Anew) and old one (A)
   float local_error = fabs(Anew[idx]-A[idx]);
-  atomicMax(error, local_error);
+  atomicMax(&shared_error, local_error);
+  __syncthreads();
+  if (threadIdx.x == 0 && threadIdx.y == 0) {
+      atomicMax(error, shared_error);
+  }
 }
 
 void laplace_init(float *in, int n, int m) {
@@ -62,7 +66,8 @@ int main(int argc, char **argv) {
   int iter_max = 10000, THREADS_BLOCK = 16;
   float *A;
 
-  const float tol = 1.0e-3f;
+  // const float tol = 1.0e-3f; (doing power of 2)
+  const float tol = 1.0e-6f;
   float error = 1.0f;
 
   // get runtime arguments: n, m, iter_max and THREADS_BLOCK
@@ -118,7 +123,7 @@ int main(int argc, char **argv) {
 
     cudaMemcpy(&error, error_dev, sizeof(float), cudaMemcpyDeviceToHost);
 
-    error = sqrtf(error);
+    // error = sqrtf(error);
 
     float *swap = A_dev;
     A_dev = Anew_dev;

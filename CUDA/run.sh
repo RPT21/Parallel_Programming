@@ -11,9 +11,9 @@
 
 set -e
 module load nvhpc/21.2
-nvcc -o main laplace_skeleton.cu -lcudart # compile
+nvcc -o main laplace_cuda_3.cu -lcudart # compile
 # Run:
-nsys nvprof --print-gpu-trace ./main 4096 4096 100 32
+nsys nvprof --print-gpu-trace ./main 4096 4096 10000 16
 
 #Profiling summary:
 #nsys nvprof --print-gpu-trace ./main 1000 1000
